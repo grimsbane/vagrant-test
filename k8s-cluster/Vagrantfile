@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+    config.vm.provider "virtualbox"
+  (1..2).each do |i|
+    config.vm.define "node-#{i}" do |node|
+      node.vm.box = "bento/centos-7"
+      node.vm.hostname = "k8s-node-#{i}"
+      node.vm.network :private_network, ip: "10.0.0.#{i + 10}"
+      config.vm.synced_folder './roots/salt/', '/srv/salt/'
+      config.vm.synced_folder './roots/pillar/', '/srv/pillar/'
+    end
+     config.vm.provision :salt do |salt|
+      salt.masterless = true
+      salt.run_highstate = true
+      salt.verbose = true
+    end 
+  end
+end
+
