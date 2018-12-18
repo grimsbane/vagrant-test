@@ -2,20 +2,32 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-    config.vm.provider "virtualbox"
-  (1..2).each do |i|
-    config.vm.define "node-#{i}" do |node|
+    config.vm.provider "virtualbox" do |v|
+      v.cpus = 2
+      v.memory = 2048
+    end
+  (1..1).each do |i|    
+    config.vm.define "k8s-master-#{i}" do |master|
+      master.vm.box = "bento/centos-7"
+      master.vm.hostname = "k8s-master-#{i}"
+      master.vm.network :private_network, ip: "10.1.0.#{i +1}", netmask: "255.255.0.0"
+      master.vm.synced_folder './roots/salt/', '/srv/salt/'
+      master.vm.synced_folder './roots/pillar/', '/srv/pillar/'
+    end
+  end
+  (1..1).each do |i|
+    config.vm.define "k8s-node-#{i}" do |node|
       node.vm.box = "bento/centos-7"
       node.vm.hostname = "k8s-node-#{i}"
-      node.vm.network :private_network, ip: "10.0.0.#{i + 10}"
-      config.vm.synced_folder './roots/salt/', '/srv/salt/'
-      config.vm.synced_folder './roots/pillar/', '/srv/pillar/'
+      node.vm.network :private_network, ip: "10.1.1.#{i +1}", netmask: "255.255.0.0"
+      node.vm.synced_folder './roots/salt/', '/srv/salt/'
+      node.vm.synced_folder './roots/pillar/', '/srv/pillar/'
     end
+  end
      config.vm.provision :salt do |salt|
       salt.masterless = true
       salt.run_highstate = true
       salt.verbose = true
     end 
-  end
 end
 
