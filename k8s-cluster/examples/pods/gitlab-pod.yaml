@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: infra
+spec:
+  containers:
+  - name: gitlab
+    image: gitlab/gitlab-ce:latest
+    ports:
+    - containerPort: 80
+
